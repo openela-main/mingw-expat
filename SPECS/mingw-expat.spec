@@ -1,19 +1,19 @@
 %{?mingw_package_header}
+%global unversion 2_5_0
 
 Name:           mingw-expat
-Version:        2.4.8
-Release:        2%{?dist}
+Version:        %(echo %{unversion} | sed 's/_/./g')
+Release:        1%{?dist}
 Summary:        MinGW Windows port of expat XML parser library
 
 License:        MIT
-URL:            http://www.libexpat.org/
-Source0:        http://downloads.sourceforge.net/expat/expat-%{version}.tar.bz2
-
-Patch0001:      expat-2.4.8-Ensure-raw-tagnames-are-safe-exiting-internalEntityParser.patch
+URL:            https://libexpat.github.io/
+Source0:        https://github.com/libexpat/libexpat/archive/R_%{unversion}.tar.gz#/expat-%{version}.tar.gz
 
 BuildArch:      noarch
 ExclusiveArch: %{ix86} x86_64
 
+BuildRequires: autoconf, automake, libtool, xmlto, gcc-c++, docbook2X
 BuildRequires: make
 BuildRequires:  mingw32-filesystem >= 95
 BuildRequires:  mingw32-gcc
@@ -23,6 +23,14 @@ BuildRequires:  mingw64-filesystem >= 95
 BuildRequires:  mingw64-gcc
 BuildRequires:  mingw64-binutils
 
+Patch0: expat-2.5.0-CVE-2023-52425.patch
+Patch1: expat-2.5.0-CVE-2024-28757.patch
+Patch2: expat-2.5.0-CVE-2024-45490.patch
+Patch3: expat-2.5.0-CVE-2024-45491.patch
+Patch4: expat-2.5.0-CVE-2024-45492.patch
+Patch5: expat-2.5.0-CVE-2024-50602.patch
+Patch6: expat-2.5.0-CVE-2024-8176.patch
+Patch7: expat-2.5.0-CVE-2025-59375.patch
 
 %description
 This is expat, the C library for parsing XML, written by James Clark. Expat
@@ -75,9 +83,20 @@ Static version of the MinGW Windows expat XML parser library.
 
 
 %prep
-%setup -q -n expat-%{version}
-%patch0001 -p1 -b .CVE-2022-40674
+%setup -q -n libexpat-R_%{unversion}/expat
+pushd ..
+%patch -P0 -p1 -b .CVE-2023-52425
+%patch -P1 -p1 -b .CVE-2024-28757
+%patch -P2 -p1 -b .CVE-2024-45490
+%patch -P3 -p1 -b .CVE-2024-45491
+%patch -P4 -p1 -b .CVE-2024-45492
+%patch -P5 -p1 -b .CVE-2024-50602
+%patch -P6 -p1 -b .CVE-2024-8176
+%patch -P7 -p1 -b .CVE-2025-59375
+popd
 
+sed -i 's/install-data-hook/do-nothing-please/' lib/Makefile.am
+autoreconf -fi
 
 %build
 %mingw_configure
@@ -90,23 +109,27 @@ Static version of the MinGW Windows expat XML parser library.
 # Remove .la files
 find $RPM_BUILD_ROOT -name "*.la" -delete
 
+# Remove xmlwf.exe (should not be packaged)
+rm -f $RPM_BUILD_ROOT%{mingw32_bindir}/xmlwf.exe
+rm -f $RPM_BUILD_ROOT%{mingw64_bindir}/xmlwf.exe
+
 # Remove documentation which duplicates that found in the native package.
-rm -rf $RPM_BUILD_ROOT%{mingw32_docdir}
-rm -rf $RPM_BUILD_ROOT%{mingw32_mandir}/man1
-rm -rf $RPM_BUILD_ROOT%{mingw64_docdir}
-rm -rf $RPM_BUILD_ROOT%{mingw64_mandir}/man1
+rm -r $RPM_BUILD_ROOT%{mingw32_docdir}
+rm -r $RPM_BUILD_ROOT%{mingw32_mandir}/man1
+rm -r $RPM_BUILD_ROOT%{mingw64_docdir}
+rm -r $RPM_BUILD_ROOT%{mingw64_mandir}/man1
 
 # Win32
 %files -n mingw32-expat
 %license COPYING
 %{mingw32_bindir}/libexpat-1.dll
-%{mingw32_bindir}/xmlwf.exe
 %{mingw32_libdir}/libexpat.dll.a
 %{mingw32_libdir}/pkgconfig/expat.pc
-%{mingw32_libdir}/cmake/expat-%{version}/
 %{mingw32_includedir}/expat.h
 %{mingw32_includedir}/expat_config.h
 %{mingw32_includedir}/expat_external.h
+# Add CMake config files
+%{mingw32_libdir}/cmake/expat-%{version}/*
 
 %files -n mingw32-expat-static
 %{mingw32_libdir}/libexpat.a
@@ -115,31 +138,26 @@ rm -rf $RPM_BUILD_ROOT%{mingw64_mandir}/man1
 %files -n mingw64-expat
 %license COPYING
 %{mingw64_bindir}/libexpat-1.dll
-%{mingw64_bindir}/xmlwf.exe
 %{mingw64_libdir}/libexpat.dll.a
 %{mingw64_libdir}/pkgconfig/expat.pc
-%{mingw64_libdir}/cmake/expat-%{version}/
 %{mingw64_includedir}/expat.h
 %{mingw64_includedir}/expat_config.h
 %{mingw64_includedir}/expat_external.h
+# Add CMake config files
+%{mingw64_libdir}/cmake/expat-%{version}/*
 
 %files -n mingw64-expat-static
 %{mingw64_libdir}/libexpat.a
 
 
 %changelog
-* Wed Jan 04 2023 Uri Lublin <uril@redhat.com> - 2.4.8-2
-- Fix CVE-2022-40674
-  Resolves: rhbz#2130833
-
-* Mon May 02 2022 Uri Lublin <uril@redhat.com> - 2.4.8-1
-- Update to 2.4.8 and pick up CVEs fixes
-- Resolves: rhbz#2050504 CVE-2022-23990
-- Resolves: rhbz#2057023 CVE-2022-25236
-- Resolves: rhbz#2057037 CVE-2022-25235
-- Resolves: rhbz#2057094 CVE-2022-25313
-- Resolves: rhbz#2057099 CVE-2022-25314
-- Resolves: rhbz#2057127 CVE-2022-25315
+* Thu Nov 20 2025 Lili Zhu <lizhu@redhat.com> - 2.5.0-1
+- Rebase to version 2.5.0
+- Fix the following CVEs
+  CVE-2023-52425 CVE-2024-28757 CVE-2024-45490
+  CVE-2024-45491 CVE-2024-45492 CVE-2024-50602
+  CVE-2024-8176 CVE-2025-59375
+- Resolves: RHEL-114628
 
 * Wed Jun 10 2020 Uri Lublin <uril@redhat.com> - 2.2.4-5
 - Rebuild
