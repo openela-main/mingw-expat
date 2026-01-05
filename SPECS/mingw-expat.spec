@@ -3,7 +3,7 @@
 
 Name:           mingw-expat
 Version:        %(echo %{unversion} | sed 's/_/./g')
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        MinGW Windows port of expat XML parser library
 
 License:        MIT
@@ -109,10 +109,6 @@ autoreconf -fi
 # Remove .la files
 find $RPM_BUILD_ROOT -name "*.la" -delete
 
-# Remove xmlwf.exe (should not be packaged)
-rm -f $RPM_BUILD_ROOT%{mingw32_bindir}/xmlwf.exe
-rm -f $RPM_BUILD_ROOT%{mingw64_bindir}/xmlwf.exe
-
 # Remove documentation which duplicates that found in the native package.
 rm -r $RPM_BUILD_ROOT%{mingw32_docdir}
 rm -r $RPM_BUILD_ROOT%{mingw32_mandir}/man1
@@ -123,6 +119,7 @@ rm -r $RPM_BUILD_ROOT%{mingw64_mandir}/man1
 %files -n mingw32-expat
 %license COPYING
 %{mingw32_bindir}/libexpat-1.dll
+%{mingw32_bindir}/xmlwf.exe
 %{mingw32_libdir}/libexpat.dll.a
 %{mingw32_libdir}/pkgconfig/expat.pc
 %{mingw32_includedir}/expat.h
@@ -138,6 +135,7 @@ rm -r $RPM_BUILD_ROOT%{mingw64_mandir}/man1
 %files -n mingw64-expat
 %license COPYING
 %{mingw64_bindir}/libexpat-1.dll
+%{mingw64_bindir}/xmlwf.exe
 %{mingw64_libdir}/libexpat.dll.a
 %{mingw64_libdir}/pkgconfig/expat.pc
 %{mingw64_includedir}/expat.h
@@ -151,6 +149,9 @@ rm -r $RPM_BUILD_ROOT%{mingw64_mandir}/man1
 
 
 %changelog
+* Wed Nov 26 2025 Lili Zhu <lizhu@redhat.com> - 2.5.0-2
+- Add xmlwf.exe back to mingw-expat.
+
 * Thu Nov 20 2025 Lili Zhu <lizhu@redhat.com> - 2.5.0-1
 - Rebase to version 2.5.0
 - Fix the following CVEs
