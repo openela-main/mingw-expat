@@ -3,7 +3,7 @@
 
 Name:           mingw-expat
 Version:        %(echo %{unversion} | sed 's/_/./g')
-Release:        2%{?dist}
+Release:        7%{?dist}
 Summary:        MinGW Windows port of expat XML parser library
 
 License:        MIT
@@ -31,6 +31,21 @@ Patch4: expat-2.5.0-CVE-2024-45492.patch
 Patch5: expat-2.5.0-CVE-2024-50602.patch
 Patch6: expat-2.5.0-CVE-2024-8176.patch
 Patch7: expat-2.5.0-CVE-2025-59375.patch
+Patch8: expat-2.5.0-CVE-2026-45186.patch
+Patch9: expat-2.5.0-CVE-2026-50219.patch
+Patch10: expat-2.5.0-CVE-2026-56132.patch
+Patch11: expat-2.5.0-CVE-2026-93990.patch
+# The next patch also fixes CVE-2026-76641
+Patch12: expat-2.5.0-CVE-2026-66046.patch
+Patch13: expat-2.5.0-CVE-2026-77214.patch
+Patch14: expat-2.5.0-CVE-2026-102633.patch
+Patch15: expat-2.5.0-CVE-2026-118370.patch
+Patch16: expat-2.5.0-CVE-2026-117610.patch
+# https://issues.redhat.com/browse/RHEL-290449
+# https://github.com/libexpat/libexpat/pull/1433
+# https://github.com/libexpat/libexpat/pull/1439
+Patch17: expat-2.5.0-CVE-2026-115506.patch
+
 
 %description
 This is expat, the C library for parsing XML, written by James Clark. Expat
@@ -93,6 +108,16 @@ pushd ..
 %patch -P5 -p1 -b .CVE-2024-50602
 %patch -P6 -p1 -b .CVE-2024-8176
 %patch -P7 -p1 -b .CVE-2025-59375
+%patch -P8 -p1 -b .CVE-2026-45186
+%patch -P9 -p1 -b .CVE-2026-50219
+%patch -P10 -p1 -b .CVE-2026-56132
+%patch -P11 -p1 -b .CVE-2026-93990
+%patch -P12 -p1 -b .CVE-2026-66046
+%patch -P13 -p1 -b .CVE-2026-77214
+%patch -P14 -p1 -b .CVE-2026-102633
+%patch -P15 -p1 -b .CVE-2026-118370
+%patch -P16 -p1 -b .CVE-2026-117610
+%patch -P17 -p1 -b .CVE-2026-115506
 popd
 
 sed -i 's/install-data-hook/do-nothing-please/' lib/Makefile.am
@@ -149,6 +174,32 @@ rm -r $RPM_BUILD_ROOT%{mingw64_mandir}/man1
 
 
 %changelog
+* Wed Nov 18 2026 RHEL Packaging Agent <redhat-ymir-agent@redhat.com> - 2.5.0-7
+- CVE-2026-115506 mingw-expat: expat: Denial of Service via delayed entity amplification detection
+  Resolves: RHEL-290449
+
+* Wed Nov 04 2026 RHEL Packaging Agent <redhat-ymir-agent@redhat.com> - 2.5.0-6
+- CVE-2026-117610 mingw-expat: expat: Denial of Service via NULL pointer
+  dereference in external entity parsing
+  Resolves: RHEL-300710
+
+* Wed Nov 04 2026 RHEL Packaging Agent <redhat-ymir-agent@redhat.com> - 2.5.0-5
+- CVE-2026-118370 mingw-expat: expat: Denial of Service via integer overflow during XML attribute parsing
+  Resolves: RHEL-300767
+
+* Sun Oct 25 2026 Uri Lublin <uril@redhat.com> - 2.5.0-4
+- fix the following CVEs: CVE-2026-77214 CVE-2026-102633
+  Resolves: RHEL-277499
+
+* Thu Oct 01 2026 Uri Lublin <uril@redhat.com> - 2.5.0-3
+- Fix the following CVEs:
+  CVE-2026-45186 CVE-2026-50219 CVE-2026-56132.patch
+  CVE-2026-93990 CVE-2026-66046 CVE-2026-76641
+  Resolves: RHEL-177987
+  Resolves: RHEL-269007
+  Resolves: RHEL-260139
+  Resolves: RHEL-269276
+
 * Wed Nov 26 2025 Lili Zhu <lizhu@redhat.com> - 2.5.0-2
 - Add xmlwf.exe back to mingw-expat.
 
